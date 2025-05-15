@@ -135,7 +135,7 @@ export default class AppServiceProvider {
   protected registerBodyParserMiddleware() {
     this.app.container.bind(BodyParserMiddleware, () => {
       const config = this.app.config.get<any>('bodyparser')
-      return new BodyParserMiddleware(config)
+      return new BodyParserMiddleware(config, this.app.experimentalFlags)
     })
   }
 

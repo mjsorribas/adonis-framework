@@ -129,6 +129,8 @@ export default class VineJSServiceProvider {
   }
 
   boot() {
+    const experimentalFlags = this.app.experimentalFlags
+
     /**
      * The file method is used to validate a field to be a valid
      * multipart file.
@@ -142,7 +144,7 @@ export default class VineJSServiceProvider {
      * data for the current request using VineJS validators
      */
     Request.macro('validateUsing', function (this: Request, ...args) {
-      return new RequestValidator(this.ctx!).validateUsing(...args)
+      return new RequestValidator(this.ctx!, experimentalFlags).validateUsing(...args)
     })
   }
 }

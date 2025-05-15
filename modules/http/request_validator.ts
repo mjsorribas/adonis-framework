@@ -16,6 +16,8 @@ import type {
 } from '@vinejs/vine/types'
 
 import type { HttpContext } from './main.js'
+import type { FeatureFlags } from '../app.js'
+import type { ExperimentalFlagsList } from '../../types/app.js'
 import type { RequestValidationOptions } from '../../types/http.js'
 
 /**
@@ -25,9 +27,11 @@ import type { RequestValidationOptions } from '../../types/http.js'
  */
 export class RequestValidator {
   #ctx: HttpContext
+  #experimentalFlags?: FeatureFlags<ExperimentalFlagsList>
 
-  constructor(ctx: HttpContext) {
+  constructor(ctx: HttpContext, experimentalFlags?: FeatureFlags<ExperimentalFlagsList>) {
     this.#ctx = ctx
+    this.#experimentalFlags = experimentalFlags
   }
 
   /**
@@ -75,12 +79,18 @@ export class RequestValidator {
       validatorOptions.messagesProvider = RequestValidator.messagesProvider(this.#ctx)
     }
 
+    const requestBody = this.#experimentalFlags?.enabled('mergeMultipartFieldsAndFiles')
+      ? this.#ctx.request.all()
+      : {
+          ...this.#ctx.request.all(),
+          ...this.#ctx.request.allFiles(),
+        }
+
     /**
      * Data to validate
      */
     const data = validatorOptions.data || {
-      ...this.#ctx.request.all(),
-      ...this.#ctx.request.allFiles(),
+      ...requestBody,
       params: this.#ctx.request.params(),
       headers: this.#ctx.request.headers(),
       cookies: this.#ctx.request.cookiesList(),
